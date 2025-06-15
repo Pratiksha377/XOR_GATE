@@ -1,15 +1,16 @@
 import numpy as np
 
-#np.random.seed(42)
+np.random.seed(42)
 
 
 class NeuralNetwork:
     def __init__(self, alpha):
         self.alpha = alpha
-        self.W1 = np.random.randn(2, 2) * np.sqrt(2 / 2)
+        # Better weight initialization with more hidden neurons
+        self.W1 = np.random.randn(2, 4) * np.sqrt(2.0 / 2)  # He initialization for ReLU
         print("W1:\n", self.W1)
-        self.W2 = np.random.randn(2, 1) * np.sqrt(2 / 2)
-        self.b1 = np.zeros((1, 2))
+        self.W2 = np.random.randn(4, 1) * np.sqrt(2.0 / 4)
+        self.b1 = np.zeros((1, 4))
         self.b2 = np.zeros((1, 1))
 
     def sigmoid(self, x, deriv=False):
@@ -38,14 +39,39 @@ class NeuralNetwork:
         self.W1 -= self.alpha * X.T.dot(delta1) / m
         self.b1 -= self.alpha * np.sum(delta1, axis=0, keepdims=True) / m
 
-    def train(self, X, y, epochs=600000):
-        for i in range(epochs):
+    def calculate_loss(self, y, output):
+        # Simple MSE loss to avoid log(0) errors
+        return np.mean((output - y) ** 2)
+
+    def train(self, X, y, max_epochs=100000):
+        best_loss = float('inf')
+        patience_counter = 0
+        patience = 10000  # Increased patience
+
+        for epoch in range(max_epochs):
             output = self.forward(X)
             self.backward(X, y, output)
-            if i % 100000 == 0:
 
-                loss = -np.mean(y * np.log(output) + (1 - y) * np.log(1 - output))
-                print(f"Epoch {i} - Loss: {loss:.4f}")
+            if epoch % 2000 == 0:  # Check more frequently
+                current_loss = self.calculate_loss(y, output)
+                accuracy = self.accuracy(X, y)
+                print(f"Epoch {epoch} - Loss: {current_loss:.4f} - Accuracy: {accuracy:.2f}")
+
+                # Early stopping check with smaller tolerance
+                if current_loss < best_loss - 0.001:  # Need significant improvement
+                    best_loss = current_loss
+                    patience_counter = 0
+                else:
+                    patience_counter += 2000
+
+                # Stop if accuracy is perfect
+                if accuracy == 1.0:
+                    print(f"Perfect accuracy achieved at epoch {epoch}")
+                    break
+
+                if patience_counter >= patience:
+                    print(f"Early stopping at epoch {epoch}")
+                    break
 
     def accuracy(self, X, y):
         output = self.forward(X)
@@ -58,9 +84,23 @@ class NeuralNetwork:
 X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
 y = np.array([[0], [1], [1], [0]])
 
-nn = NeuralNetwork(alpha=0.001)#also try with 0.01 and 0.1
-nn.train(X, y)
+# Test with optimized learning rates
+learning_rates = [0.3, 0.5, 1.0]
 
-print("\nOutput after training:\n", nn.forward(X))
-print("Predictions:\n", np.round(nn.forward(X)))
-print("Accuracy:", nn.accuracy(X, y))
+for lr in learning_rates:
+    print(f"\n{'='*50}")
+    print(f"Testing with learning rate: {lr}")
+    print(f"{'='*50}")
+
+    nn = NeuralNetwork(alpha=lr)
+    nn.train(X, y)
+
+    final_output = nn.forward(X)
+    predictions = np.round(final_output)
+    accuracy = nn.accuracy(X, y)
+
+    print(f"\nFinal Results for lr={lr}:")
+    print("Raw Output:\n", final_output)
+    print("Predictions:\n", predictions.astype(int))
+    print("Expected:\n", y)
+    print(f"Final Accuracy: {accuracy:.2f}")
