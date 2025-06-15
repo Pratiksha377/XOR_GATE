@@ -1,6 +1,6 @@
 import numpy as np
 
-np.random.seed(42)
+#np.random.seed(42)
 
 
 class NeuralNetwork:
@@ -58,7 +58,7 @@ class NeuralNetwork:
 X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
 y = np.array([[0], [1], [1], [0]])
 
-nn = NeuralNetwork(alpha=0.001)
+nn = NeuralNetwork(alpha=0.001)#also try with 0.01 and 0.1
 nn.train(X, y)
 
 print("\nOutput after training:\n", nn.forward(X))
