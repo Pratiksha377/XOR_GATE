@@ -7,7 +7,7 @@ class NeuralNetwork:
     def __init__(self, alpha):
         self.alpha = alpha
         self.W1 = np.random.randn(2, 4) * np.sqrt(2.0 / 2)  
-        print("W1:\n", self.W1)
+        #print("W1:\n", self.W1)
         self.W2 = np.random.randn(4, 1) * np.sqrt(2.0 / 4)
         self.b1 = np.zeros((1, 4))
         self.b2 = np.zeros((1, 1))
