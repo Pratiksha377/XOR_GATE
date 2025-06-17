@@ -6,8 +6,7 @@ import numpy as np
 class NeuralNetwork:
     def __init__(self, alpha):
         self.alpha = alpha
-        # Better weight initialization with more hidden neurons
-        self.W1 = np.random.randn(2, 4) * np.sqrt(2.0 / 2)  # He initialization for ReLU
+        self.W1 = np.random.randn(2, 4) * np.sqrt(2.0 / 2)  
         print("W1:\n", self.W1)
         self.W2 = np.random.randn(4, 1) * np.sqrt(2.0 / 4)
         self.b1 = np.zeros((1, 4))
@@ -40,31 +39,31 @@ class NeuralNetwork:
         self.b1 -= self.alpha * np.sum(delta1, axis=0, keepdims=True) / m
 
     def calculate_loss(self, y, output):
-        # Simple MSE loss to avoid log(0) errors
-        return np.mean((output - y) ** 2)
+       def binary_cross_entropy(y, output, epsilon=1e-12):
+            output = np.clip(output, epsilon, 1. - epsilon)
+            return -np.mean(y * np.log(output) + (1 - y) * np.log(1 - output))
+
 
     def train(self, X, y, max_epochs=100000):
         best_loss = float('inf')
         patience_counter = 0
-        patience = 10000  # Increased patience
+        patience = 10000  
 
         for epoch in range(max_epochs):
             output = self.forward(X)
             self.backward(X, y, output)
 
-            if epoch % 2000 == 0:  # Check more frequently
+            if epoch % 2000 == 0:  
                 current_loss = self.calculate_loss(y, output)
                 accuracy = self.accuracy(X, y)
                 print(f"Epoch {epoch} - Loss: {current_loss:.4f} - Accuracy: {accuracy:.2f}")
 
-                # Early stopping check with smaller tolerance
                 if current_loss < best_loss - 0.001:  # Need significant improvement
                     best_loss = current_loss
                     patience_counter = 0
                 else:
                     patience_counter += 2000
 
-                # Stop if accuracy is perfect
                 if accuracy == 1.0:
                     print(f"Perfect accuracy achieved at epoch {epoch}")
                     break
@@ -85,7 +84,7 @@ X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
 y = np.array([[0], [1], [1], [0]])
 
 # Test with optimized learning rates
-learning_rates = [0.3, 0.5, 1.0]
+learning_rates = [0.1, 0.3, 1.0]
 
 for lr in learning_rates:
     print(f"\n{'='*50}")
